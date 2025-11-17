@@ -64,11 +64,10 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useScoreStore } from '@/stores/scoreStore';
-import { useUserStore } from '@/stores/userStore';
+import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
 const scoreStore = useScoreStore();
-const userStore = useUserStore();
 
 const campaignScores = computed(() => {
   const scores = scoreStore.bestScores.filter((s) => s.mode === 'campaign');
@@ -120,29 +119,28 @@ function backToMenu() {
   router.push('/ddd');
 }
 
+function getGameIdForRequests(): string {
+  const numericId = resolveNumericGameId();
+  if (numericId && Number.isFinite(numericId)) {
+    return String(numericId);
+  }
+  return import.meta.env.VITE_GAME_ID || 'ddd';
+}
+
 function showLeaderboard() {
   // Cargar mejores puntajes globales
-  const gameId = import.meta.env.VITE_GAME_ID || 'ddd';
+  const gameId = getGameIdForRequests();
   scoreStore.fetchLeaderboard(gameId, 10).catch((error) => {
     console.error('Failed to load leaderboard:', error);
   });
 }
 
 onMounted(() => {
-  const gameId = import.meta.env.VITE_GAME_ID || 'ddd';
-
-  // Cargar los últimos 5 mejores puntajes del jugador
-  const userId = userStore.userId;
-  if (userId) {
-    scoreStore.fetchMyScores(gameId, userId).catch((error) => {
-      console.error('Failed to load user scores:', error);
-    });
-  } else {
-    // Si no hay usuario, cargar leaderboard general como fallback
-    scoreStore.fetchLeaderboard(gameId, 10).catch((error) => {
-      console.error('Failed to load leaderboard:', error);
-    });
-  }
+  const gameId = getGameIdForRequests();
+  // Cargar leaderboard general
+  scoreStore.fetchLeaderboard(gameId, 10).catch((error) => {
+    console.error('Failed to load leaderboard:', error);
+  });
 });
 </script>
 

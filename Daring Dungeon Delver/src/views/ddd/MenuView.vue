@@ -44,7 +44,10 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { exitGameWithConfirmation } from '@/utils/exitGame';
 import { useGameStore } from '@/stores/gameStore';
-import { gameLabClient } from '@/services/GameLabClient';
+import { authProvider } from '@/services/AuthProvider';
+import { createApiClient } from '@/integration/ApiClient';
+import { LaunchInfoService } from '@/integration/LaunchInfoService';
+import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
 const gameStore = useGameStore();
@@ -52,11 +55,23 @@ const showAuthModal = ref(false);
 
 onMounted(async () => {
   try {
-    const validation = await gameLabClient.validate();
-    if (!validation.valid) {
+    const gameId = resolveNumericGameId();
+    if (!gameId) {
+      showAuthModal.value = true;
+      return;
+    }
+
+    const apiClient = createApiClient({
+      getToken: () => authProvider.getToken(),
+    });
+    const launchInfoService = new LaunchInfoService(apiClient);
+    const isValid = await launchInfoService.validateSession(gameId);
+
+    if (!isValid) {
       showAuthModal.value = true;
     }
-  } catch {
+  } catch (error) {
+    console.error('Failed to validate user session:', error);
     showAuthModal.value = true;
   }
 });

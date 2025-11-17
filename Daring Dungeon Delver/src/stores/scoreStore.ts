@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import type { LeaderboardEntry } from '@/models/types';
-import { gameLabClient } from '@/services/GameLabClient';
+import { createApiClient } from '@/integration/ApiClient';
+import { LeaderboardsService } from '@/integration/LeaderboardsService';
+import { authProvider } from '@/services/AuthProvider';
+import { resolveNumericGameId } from '@/integration/config';
 
 interface LocalScore {
   score: number;
@@ -119,8 +122,8 @@ export const useScoreStore = defineStore('score', {
       this.isLoading = true;
       this.error = null;
       try {
-        const scores = await gameLabClient.getMyScores(gameId, userId);
-        this.bestScores = scores;
+        // Mantener compatibilidad, pero reutilizar leaderboard global
+        await this.fetchLeaderboard(gameId, 10);
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to fetch scores';
         console.error('Failed to fetch scores:', error);
@@ -133,8 +136,31 @@ export const useScoreStore = defineStore('score', {
       this.isLoading = true;
       this.error = null;
       try {
-        const scores = await gameLabClient.getLeaderboard(gameId, limit);
-        this.bestScores = scores;
+        const numericFromArg = Number(gameId);
+        const resolvedGameId =
+          Number.isFinite(numericFromArg) && numericFromArg > 0
+            ? numericFromArg
+            : resolveNumericGameId();
+
+        if (!resolvedGameId) {
+          throw new Error('Missing gameId for leaderboard request');
+        }
+
+        const apiClient = createApiClient({
+          getToken: () => authProvider.getToken(),
+        });
+        const service = new LeaderboardsService(apiClient);
+        const response = await service.getLeaderboard(resolvedGameId, limit);
+
+        const rows = response.leaderboard ?? [];
+        this.bestScores = rows.map((row, index) => ({
+          user_id: String(row.rank ?? index + 1),
+          user_name: row.nickname,
+          score: row.score,
+          level: 1,
+          mode: 'campaign',
+          created_at: new Date().toISOString(),
+        }));
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to fetch leaderboard';
         console.error('Failed to fetch leaderboard:', error);

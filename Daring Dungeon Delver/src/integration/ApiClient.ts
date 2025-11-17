@@ -3,6 +3,7 @@ import { logger } from "../utils/logger";
 import { ApiError } from "./errors";
 import { parseResponse, safeReadBody } from "./response";
 import { parseRetryAfter, wait } from "./retry";
+import { resolveApiBase } from "./config";
 
 /**
  * ApiClient module
@@ -38,7 +39,11 @@ export class ApiClient {
   ) {
     const normalizedBase = baseUrl.replace(/\/+$/, "");
     const parsedBase = new URL(normalizedBase);
-    if (parsedBase.protocol !== "https:") {
+    if (
+      parsedBase.protocol !== "https:" &&
+      parsedBase.hostname !== "localhost" &&
+      parsedBase.hostname !== "127.0.0.1"
+    ) {
       throw new Error("VITE_API_BASE must use HTTPS");
     }
 
@@ -216,7 +221,8 @@ export const createApiClient = (
     maxAttempts?: number;
   }
 ): ApiClient => {
-  return new ApiClient(import.meta.env.VITE_API_BASE, options.getToken, {
+  const baseUrl = resolveApiBase();
+  return new ApiClient(baseUrl, options.getToken, {
     requestTokenRefresh: options.requestTokenRefresh,
     fetchImpl: options.fetchImpl,
     maxAttempts: options.maxAttempts,

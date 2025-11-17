@@ -53,13 +53,13 @@ import { useUserStore } from '@/stores/userStore';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useScoreStore } from '@/stores/scoreStore';
 import { useGameStore } from '@/stores/gameStore';
-import { gameLabClient } from '@/services/GameLabClient';
 import { authProvider } from '@/services/AuthProvider';
 import { getCurrentTimestamp } from '@/utils/formatTime';
 import StartGame from '@/game/config';
 import { createApiClient } from '@/integration/ApiClient';
 import { SessionService } from '@/integration/SessionService';
 import { SessionManager } from '@/runtime/SessionManager';
+import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -89,14 +89,8 @@ function initSessionManagerIfPossible() {
     return;
   }
 
-  const baseUrl = import.meta.env.VITE_API_BASE;
-  if (!baseUrl) {
-    return;
-  }
-
-  const rawGameId = import.meta.env.VITE_GAME_ID;
-  const parsedGameId = Number(rawGameId);
-  if (!Number.isFinite(parsedGameId) || parsedGameId <= 0) {
+  const parsedGameId = resolveNumericGameId();
+  if (!parsedGameId) {
     return;
   }
 
@@ -118,16 +112,8 @@ function initSessionManagerIfPossible() {
 
 onMounted(async () => {
   try {
-    // Start session
-    const sessionResponse = await gameLabClient.startSession({
-      user_id: userStore.userId,
-      game_id: import.meta.env.VITE_GAME_ID || 'ddd',
-      client_time: getCurrentTimestamp(),
-      mode: gameStore.mode,
-      level: gameStore.currentLevel,
-    });
-
-    sessionStore.startSession(sessionResponse.session_id);
+    // Start local session tracking
+    sessionStore.startSession(crypto.randomUUID(), gameStore.mode, gameStore.currentLevel);
 
     // Initialize session manager for aggregated stats (highest score & total time)
     initSessionManagerIfPossible();
@@ -258,12 +244,6 @@ async function handleReturnToMenu() {
       scoreStore.recordLocalScore(finalScore, gameStore.mode, gameStore.currentLevel);
       
       // End session
-      await gameLabClient.endSession({
-        session_id: sessionStore.sessionId || '',
-        client_time: getCurrentTimestamp(),
-        duration_seconds: duration,
-      });
-
       sessionStore.endSession();
       gameStore.endGame();
     }
@@ -279,19 +259,6 @@ async function handleLevelComplete(data: { score: number; level: number }) {
   try {
     const duration = sessionStore.sessionDuration;
     
-    // Report score
-    await gameLabClient.reportScore({
-      session_id: sessionStore.sessionId || '',
-      user_id: userStore.userId,
-      game_id: import.meta.env.VITE_GAME_ID || 'ddd',
-      mode: gameStore.mode,
-      level: data.level,
-      score: data.score,
-      metadata: {
-        duration_seconds: duration,
-      },
-    });
-
     scoreStore.pushScore(data.score, gameStore.isCampaignMode);
 
     // Check if there's a next level
@@ -375,27 +342,6 @@ async function endGameSession(finalScore: number) {
   try {
     const duration = sessionStore.sessionDuration;
     
-    // Report final score if not already reported
-    await gameLabClient.reportScore({
-      session_id: sessionStore.sessionId || '',
-      user_id: userStore.userId,
-      game_id: import.meta.env.VITE_GAME_ID || 'ddd',
-      mode: gameStore.mode,
-      level: gameStore.currentLevel,
-      score: finalScore,
-      metadata: {
-        duration_seconds: duration,
-        completed: true,
-      },
-    });
-
-    // End session
-    await gameLabClient.endSession({
-      session_id: sessionStore.sessionId || '',
-      client_time: getCurrentTimestamp(),
-      duration_seconds: duration,
-    });
-
     scoreStore.pushScore(finalScore, gameStore.isCampaignMode);
     scoreStore.recordLocalScore(finalScore, gameStore.mode, gameStore.currentLevel);
     sessionStore.endSession();
