@@ -12,7 +12,7 @@ export function resolveApiBase(): string {
 /**
  * Devuelve el gameId como string para usar en rutas
  * (/collection/my-games/{gameId}, /leaderboards/{gameId}, etc.).
- * Prioriza el parámetro de la URL (?gameId=...) y luego VITE_GAME_ID.
+ * Se obtiene únicamente desde el parámetro de la URL (?gameId=...).
  */
 export function resolveGameIdForPath(): string | null {
   if (typeof window !== "undefined") {
@@ -25,13 +25,6 @@ export function resolveGameIdForPath(): string | null {
     } catch {
       // Ignorar errores de parsing de URL
     }
-  }
-
-  const envGameId = (import.meta.env as any).VITE_GAME_ID as
-    | string
-    | undefined;
-  if (typeof envGameId === "string" && envGameId.trim()) {
-    return envGameId.trim();
   }
 
   return null;
@@ -49,17 +42,7 @@ export function resolveNumericGameId(): number | null {
         }
       }
     } catch {
-      // Ignore URL parsing errors and fall back to env-based config
-    }
-  }
-
-  const envGameId = (import.meta.env as any).VITE_GAME_ID as
-    | string
-    | undefined;
-  if (typeof envGameId === "string" && envGameId.trim()) {
-    const parsed = Number(envGameId);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return parsed;
+      // Ignorar errores de parsing de URL
     }
   }
 

@@ -2,6 +2,19 @@
   <div :class="$style.puntajes">
     <img :class="$style.dungeonBackground" src="/assets/backgrounds/main_menu.png" alt="Dungeon Background" />
     
+    <!-- Modal: falta gameId -->
+    <div v-if="showGameIdModal" :class="$style.authOverlay">
+      <div :class="$style.authModal">
+        <div :class="$style.authTitle">Juego no disponible</div>
+        <div :class="$style.authMessage">
+          No se pudo determinar el juego (gameId).
+        </div>
+        <div :class="$style.authMessage">
+          Por favor vuelve a iniciar el juego desde UfroGameLab.
+        </div>
+      </div>
+    </div>
+
     <div :class="$style.puntajes2">Puntajes</div>
     
     <div :class="$style.boton" @click="backToMenu">
@@ -61,13 +74,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useScoreStore } from '@/stores/scoreStore';
 import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
 const scoreStore = useScoreStore();
+const showGameIdModal = ref(false);
 
 const campaignScores = computed(() => {
   const scores = scoreStore.bestScores.filter((s) => s.mode === 'campaign');
@@ -119,24 +133,37 @@ function backToMenu() {
   router.push('/ddd');
 }
 
-function getGameIdForRequests(): string {
+function getGameIdForRequests(): string | null {
   const numericId = resolveNumericGameId();
   if (numericId && Number.isFinite(numericId)) {
     return String(numericId);
   }
-  return import.meta.env.VITE_GAME_ID || 'ddd';
+  return null;
+}
+
+function ensureGameIdOrShowModal(): string | null {
+  const gameId = getGameIdForRequests();
+  if (!gameId) {
+    showGameIdModal.value = true;
+    return null;
+  }
+  return gameId;
 }
 
 function showLeaderboard() {
   // Cargar mejores puntajes globales
-  const gameId = getGameIdForRequests();
+  const gameId = ensureGameIdOrShowModal();
+  if (!gameId) return;
+
   scoreStore.fetchLeaderboard(gameId, 10).catch((error) => {
     console.error('Failed to load leaderboard:', error);
   });
 }
 
 onMounted(() => {
-  const gameId = getGameIdForRequests();
+  const gameId = ensureGameIdOrShowModal();
+  if (!gameId) return;
+
   // Cargar leaderboard general
   scoreStore.fetchLeaderboard(gameId, 10).catch((error) => {
     console.error('Failed to load leaderboard:', error);
@@ -158,6 +185,39 @@ onMounted(() => {
   color: #d5c400;
   font-family: 'MedievalSharp', serif;
   padding-bottom: 2rem;
+}
+
+.authOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 10;
+}
+
+.authModal {
+  max-width: 640px;
+  margin: 1rem;
+  padding: 2rem;
+  border-radius: 16px;
+  background-color: #111827;
+  color: #f9fafb;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.authTitle {
+  font-size: 40px;
+  margin-bottom: 1rem;
+  color: #fbbf24;
+  font-family: 'MedievalSharp', serif;
+}
+
+.authMessage {
+  font-size: 20px;
+  margin-bottom: 0.5rem;
 }
 
 .dungeonBackground {

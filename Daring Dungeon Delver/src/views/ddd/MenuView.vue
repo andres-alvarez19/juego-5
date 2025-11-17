@@ -47,7 +47,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { authProvider } from '@/services/AuthProvider';
 import { createApiClient } from '@/integration/ApiClient';
 import { LaunchInfoService } from '@/integration/LaunchInfoService';
-import { resolveGameIdForPath } from '@/integration/config';
+import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
 const gameStore = useGameStore();
@@ -59,8 +59,8 @@ onMounted(async () => {
   try {
     isCheckingAuth.value = true;
 
-    const gameId = resolveGameIdForPath();
-    if (!gameId) {
+    const gameId = resolveNumericGameId();
+    if (!gameId || !Number.isFinite(gameId) || gameId <= 0) {
       showAuthModal.value = true;
       isAuthorized.value = false;
       return;
