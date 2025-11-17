@@ -1,0 +1,2 @@
+- Codigo completo en ingles (incluye nombres de variables, metodos, etc).
+- Comentarios y documentación en español (Cualquier comentario que se quiera realizar ya sea para explicar algun bloque de codigo o documentación)
