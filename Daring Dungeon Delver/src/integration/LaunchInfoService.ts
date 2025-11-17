@@ -5,7 +5,8 @@ export class LaunchInfoService {
   constructor(private readonly client: ApiClient) {}
 
   async validateSession(gameId: number | string): Promise<boolean> {
-    const path = `/collection/my-games/${gameId}/launch-info`;
+    // Usamos ruta relativa sin slash inicial para que respete el path base de la API (ej: /v0, /v1)
+    const path = `collection/my-games/${gameId}/launch-info`;
 
     try {
       logger.info("[LaunchInfoService] Validating session", {

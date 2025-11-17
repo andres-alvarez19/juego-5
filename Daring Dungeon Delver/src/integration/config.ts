@@ -1,19 +1,12 @@
-const DEFAULT_LOCAL_BASE = "http://localhost:8080/v1";
-
 export function resolveApiBase(): string {
-  const envBase = (import.meta.env as any).VITE_API_BASE as string | undefined;
-  if (typeof envBase === "string" && envBase.trim()) {
-    return envBase.trim().replace(/\/+$/, "");
-  }
-
+  console.log('[resolveApiBase]', import.meta.env.VITE_API_BASE_URL);
   const envBaseUrl = (import.meta.env as any).VITE_API_BASE_URL as
     | string
     | undefined;
   if (typeof envBaseUrl === "string" && envBaseUrl.trim()) {
-    return `${envBaseUrl.trim().replace(/\/+$/, "")}/v1`;
+    return envBaseUrl.trim().replace(/\/+$/, "");
   }
-
-  return DEFAULT_LOCAL_BASE;
+  throw new Error("VITE_API_BASE_URL must be defined");
 }
 
 /**

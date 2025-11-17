@@ -12,4 +12,12 @@ const router = createRouter({
   ],
 });
 
+router.afterEach((to) => {
+  const baseTitle = import.meta.env.VITE_GAME_NAME || 'Daring Dungeon Delver';
+  const routeTitle = (to.meta && (to.meta as any).title) || baseTitle;
+  if (typeof document !== 'undefined') {
+    document.title = routeTitle;
+  }
+});
+
 export default router;
