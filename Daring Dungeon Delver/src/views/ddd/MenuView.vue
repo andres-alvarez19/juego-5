@@ -52,12 +52,17 @@ import { resolveGameIdForPath } from '@/integration/config';
 const router = useRouter();
 const gameStore = useGameStore();
 const showAuthModal = ref(false);
+const isCheckingAuth = ref(true);
+const isAuthorized = ref(false);
 
 onMounted(async () => {
   try {
+    isCheckingAuth.value = true;
+
     const gameId = resolveGameIdForPath();
     if (!gameId) {
       showAuthModal.value = true;
+      isAuthorized.value = false;
       return;
     }
 
@@ -69,15 +74,26 @@ onMounted(async () => {
 
     if (!isValid) {
       showAuthModal.value = true;
+      isAuthorized.value = false;
+    } else {
+      isAuthorized.value = true;
     }
   } catch (error) {
     console.error('Failed to validate user session:', error);
     showAuthModal.value = true;
+    isAuthorized.value = false;
+  } finally {
+    isCheckingAuth.value = false;
   }
 });
 
 function ensureAuthorized(): boolean {
-  return !showAuthModal.value;
+  // No permitir jugar mientras se está validando
+  if (isCheckingAuth.value) {
+    return false;
+  }
+
+  return !showAuthModal.value && isAuthorized.value;
 }
 
 function startGame() {
