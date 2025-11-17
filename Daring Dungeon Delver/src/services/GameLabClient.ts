@@ -7,10 +7,11 @@ import type {
   LeaderboardEntry,
 } from '@/models/types';
 import { safeFetch } from '@/utils/safeFetch';
+import { logger } from '@/utils/logger';
 import { authProvider } from './AuthProvider';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.ufrogamelab.cl';
-const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
+// Backend base URL: restrict to local Spring Boot instance
+const API_BASE_URL = 'http://localhost:8080';
 
 /**
  * GameLabClient - Service for interacting with UfroGameLab API
@@ -18,11 +19,7 @@ const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
 export class GameLabClient {
   private static instance: GameLabClient;
 
-  private constructor() {
-    if (DEV_MODE) {
-      console.warn('[DEV MODE] GameLabClient running in development mode - API calls will be bypassed');
-    }
-  }
+  private constructor() {}
 
   static getInstance(): GameLabClient {
     if (!GameLabClient.instance) {
@@ -32,32 +29,21 @@ export class GameLabClient {
   }
 
   /**
-   * Check if running in development mode
-   */
-  isDevMode(): boolean {
-    return DEV_MODE;
-  }
-
-  /**
    * Validate current authentication token
    */
   async validate(): Promise<{ valid: boolean; user?: { id: string; name: string } }> {
-    // Bypass in dev mode
-    if (DEV_MODE) {
-      console.log('[DEV MODE] Bypassing authentication validation');
-      return { 
-        valid: true, 
-        user: { 
-          id: 'dev-user-123', 
-          name: 'Dev User' 
-        } 
-      };
-    }
+    const url = `${API_BASE_URL}/auth/validate`;
 
     try {
       const headers = await authProvider.getAuthHeaders();
+
+      logger.info('[GameLabClient] Sending auth validation request', {
+        url,
+        method: 'GET',
+      });
+
       const response = await safeFetch<{ valid: boolean; user?: { id: string; name: string } }>(
-        `${API_BASE_URL}/auth/validate`,
+        url,
         {
           method: 'GET',
           headers: {
@@ -66,6 +52,12 @@ export class GameLabClient {
           },
         }
       );
+
+      logger.debug('[GameLabClient] Received auth validation response', {
+        url,
+        response,
+      });
+
       return response;
     } catch (error) {
       console.error('Validation failed:', error);
@@ -77,18 +69,16 @@ export class GameLabClient {
    * Start a new game session
    */
   async startSession(payload: SessionPayload): Promise<SessionResponse> {
-    // Bypass in dev mode
-    if (DEV_MODE) {
-      console.log('[DEV MODE] Bypassing session start', payload);
-      return {
-        session_id: `dev-session-${Date.now()}`,
-        status: 'active',
-        message: 'Dev mode - session bypassed',
-      };
-    }
-
+    const url = `${API_BASE_URL}/sessions/start`;
     const headers = await authProvider.getAuthHeaders();
-    return safeFetch<SessionResponse>(`${API_BASE_URL}/sessions/start`, {
+
+    logger.info('[GameLabClient] Sending startSession request', {
+      url,
+      method: 'POST',
+      payload,
+    });
+
+    const response = await safeFetch<SessionResponse>(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,24 +86,29 @@ export class GameLabClient {
       },
       body: JSON.stringify(payload),
     });
+
+    logger.debug('[GameLabClient] Received startSession response', {
+      url,
+      response,
+    });
+
+    return response;
   }
 
   /**
    * End a game session
    */
   async endSession(payload: SessionUpdatePayload): Promise<SessionResponse> {
-    // Bypass in dev mode
-    if (DEV_MODE) {
-      console.log('[DEV MODE] Bypassing session end', payload);
-      return {
-        session_id: payload.session_id,
-        status: 'completed',
-        message: 'Dev mode - session end bypassed',
-      };
-    }
-
+    const url = `${API_BASE_URL}/sessions/end`;
     const headers = await authProvider.getAuthHeaders();
-    return safeFetch<SessionResponse>(`${API_BASE_URL}/sessions/end`, {
+
+    logger.info('[GameLabClient] Sending endSession request', {
+      url,
+      method: 'POST',
+      payload,
+    });
+
+    const response = await safeFetch<SessionResponse>(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -121,24 +116,29 @@ export class GameLabClient {
       },
       body: JSON.stringify(payload),
     });
+
+    logger.debug('[GameLabClient] Received endSession response', {
+      url,
+      response,
+    });
+
+    return response;
   }
 
   /**
    * Report a score
    */
   async reportScore(payload: ScorePayload): Promise<ScoreResponse> {
-    // Bypass in dev mode
-    if (DEV_MODE) {
-      console.log('[DEV MODE] Bypassing score report', payload);
-      return {
-        score_id: `dev-score-${Date.now()}`,
-        status: 'recorded',
-        message: 'Dev mode - score bypassed',
-      };
-    }
-
+    const url = `${API_BASE_URL}/scores/report`;
     const headers = await authProvider.getAuthHeaders();
-    return safeFetch<ScoreResponse>(`${API_BASE_URL}/scores/report`, {
+
+    logger.info('[GameLabClient] Sending reportScore request', {
+      url,
+      method: 'POST',
+      payload,
+    });
+
+    const response = await safeFetch<ScoreResponse>(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -146,54 +146,73 @@ export class GameLabClient {
       },
       body: JSON.stringify(payload),
     });
+
+    logger.debug('[GameLabClient] Received reportScore response', {
+      url,
+      response,
+    });
+
+    return response;
   }
 
   /**
    * Get leaderboard entries
    */
   async getLeaderboard(gameId: string, limit = 10): Promise<LeaderboardEntry[]> {
-    // Bypass in dev mode
-    if (DEV_MODE) {
-      console.log('[DEV MODE] Bypassing leaderboard fetch', { gameId, limit });
-      // No mock scores in dev mode; return empty list
-      return [];
-    }
-
+    const url = `${API_BASE_URL}/leaderboard/${gameId}?limit=${limit}`;
     const headers = await authProvider.getAuthHeaders();
-    return safeFetch<LeaderboardEntry[]>(
-      `${API_BASE_URL}/leaderboard/${gameId}?limit=${limit}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-      }
-    );
+
+    logger.info('[GameLabClient] Sending getLeaderboard request', {
+      url,
+      method: 'GET',
+      gameId,
+      limit,
+    });
+
+    const response = await safeFetch<LeaderboardEntry[]>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    });
+
+    logger.debug('[GameLabClient] Received getLeaderboard response', {
+      url,
+      count: response.length,
+    });
+
+    return response;
   }
 
   /**
    * Get user's scores
    */
   async getMyScores(gameId: string, userId: string): Promise<LeaderboardEntry[]> {
-    // Bypass in dev mode
-    if (DEV_MODE) {
-      console.log('[DEV MODE] Bypassing user scores fetch', { gameId, userId });
-      // No mock scores in dev mode; return empty list
-      return [];
-    }
-
+    const url = `${API_BASE_URL}/scores/${gameId}/user/${userId}`;
     const headers = await authProvider.getAuthHeaders();
-    return safeFetch<LeaderboardEntry[]>(
-      `${API_BASE_URL}/scores/${gameId}/user/${userId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-      }
-    );
+
+    logger.info('[GameLabClient] Sending getMyScores request', {
+      url,
+      method: 'GET',
+      gameId,
+      userId,
+    });
+
+    const response = await safeFetch<LeaderboardEntry[]>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    });
+
+    logger.debug('[GameLabClient] Received getMyScores response', {
+      url,
+      count: response.length,
+    });
+
+    return response;
   }
 }
 

@@ -85,7 +85,7 @@ let sessionManager: SessionManager | null = null;
 let sessionManagerGameId: number | null = null;
 
 function initSessionManagerIfPossible() {
-  if (sessionManager || gameLabClient.isDevMode()) {
+  if (sessionManager) {
     return;
   }
 
@@ -118,29 +118,6 @@ function initSessionManagerIfPossible() {
 
 onMounted(async () => {
   try {
-    // Check if running in dev mode
-    if (gameLabClient.isDevMode()) {
-      console.log('[DEV MODE] Bypassing authentication - using dev user');
-      
-      // Set dev user if not already set
-      if (!userStore.userId) {
-        userStore.setUser({
-          id: 'dev-user-123',
-          displayName: 'Dev User',
-          token: 'dev-token',
-        });
-      }
-    }
-
-    // Validate authentication
-    const validation = await gameLabClient.validate();
-    
-    if (!validation.valid) {
-      showAuthWarning.value = true;
-      isLoading.value = false;
-      return;
-    }
-
     // Start session
     const sessionResponse = await gameLabClient.startSession({
       user_id: userStore.userId,
@@ -183,7 +160,7 @@ async function initializeGame() {
       // Track last score and campaign best score continuously
       scoreStore.pushScore(score, gameStore.isCampaignMode);
 
-      if (!gameLabClient.isDevMode() && sessionManager && gameStore.isCampaignMode) {
+      if (sessionManager && gameStore.isCampaignMode) {
         sessionManager.setScore(score);
       }
     });
@@ -209,7 +186,7 @@ function startTimer() {
   timerInterval = window.setInterval(() => {
     if (!isPaused) {
       elapsedTime.value++;
-      if (!gameLabClient.isDevMode() && sessionManager) {
+      if (sessionManager) {
         sessionManager.addPlaytime(1);
       }
     }
@@ -275,6 +252,10 @@ async function handleReturnToMenu() {
   try {
     if (sessionStore.sessionId) {
       const duration = sessionStore.sessionDuration;
+      const finalScore = scoreStore.lastScore || 0;
+
+      // Registrar puntaje local también cuando se sale manualmente al menú
+      scoreStore.recordLocalScore(finalScore, gameStore.mode, gameStore.currentLevel);
       
       // End session
       await gameLabClient.endSession({

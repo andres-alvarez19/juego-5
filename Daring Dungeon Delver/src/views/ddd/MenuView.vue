@@ -1,6 +1,20 @@
 <template>
   <div :class="$style.startScreen">
     <img :class="$style.dungeonBackground" src="/assets/backgrounds/main_menu.png" alt="Dungeon Background" />
+
+    <!-- Auth modal -->
+    <div v-if="showAuthModal" :class="$style.authOverlay">
+      <div :class="$style.authModal">
+        <div :class="$style.authTitle">No autorizado</div>
+        <div :class="$style.authMessage">
+          El token de autenticación no es válido o ha expirado.
+        </div>
+        <div :class="$style.authMessage">
+          Por favor vuelve a iniciar el juego desde UfroGameLab.
+        </div>
+      </div>
+    </div>
+
     <div :class="$style.botonesDeMenuParent">
       <div :class="$style.daringDungeonDelver">Daring Dungeon Delver</div>
       <div :class="$style.botonesDeMenu">
@@ -26,23 +40,44 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { exitGameWithConfirmation } from '@/utils/exitGame';
 import { useGameStore } from '@/stores/gameStore';
+import { gameLabClient } from '@/services/GameLabClient';
 
 const router = useRouter();
 const gameStore = useGameStore();
+const showAuthModal = ref(false);
+
+onMounted(async () => {
+  try {
+    const validation = await gameLabClient.validate();
+    if (!validation.valid) {
+      showAuthModal.value = true;
+    }
+  } catch {
+    showAuthModal.value = true;
+  }
+});
+
+function ensureAuthorized(): boolean {
+  return !showAuthModal.value;
+}
 
 function startGame() {
+  if (!ensureAuthorized()) return;
   gameStore.startCampaign();
   router.push('/ddd/play');
 }
 
 function selectLevel() {
+  if (!ensureAuthorized()) return;
   router.push('/ddd/level-selector');
 }
 
 function viewScores() {
+  if (!ensureAuthorized()) return;
   router.push('/ddd/scores');
 }
 
@@ -77,6 +112,39 @@ function handleExit() {
   object-fit: cover;
   opacity: 0.5;
   z-index: 0;
+}
+
+.authOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 10;
+}
+
+.authModal {
+  max-width: 640px;
+  margin: 1rem;
+  padding: 2rem;
+  border-radius: 16px;
+  background-color: #111827;
+  color: #f9fafb;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.authTitle {
+  font-size: 40px;
+  margin-bottom: 1rem;
+  color: #fbbf24;
+  font-family: 'MedievalSharp', serif;
+}
+
+.authMessage {
+  font-size: 20px;
+  margin-bottom: 0.5rem;
 }
 
 .botonesDeMenuParent {
@@ -169,8 +237,8 @@ function handleExit() {
   background-color: #183037;
   border: 2px solid #a5aa00;
   box-sizing: border-box;
-  width: 388px;
-  height: 108px;
+  width: 100%;
+  height: 100%;
   opacity: 0.6;
 }
 
@@ -182,7 +250,7 @@ function handleExit() {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 108px;
+  height: 100%;
   z-index: 1;
 }
 
