@@ -4,7 +4,7 @@ import { logger } from "../utils/logger";
 export class LaunchInfoService {
   constructor(private readonly client: ApiClient) {}
 
-  async validateSession(gameId: number): Promise<boolean> {
+  async validateSession(gameId: number | string): Promise<boolean> {
     const path = `/collection/my-games/${gameId}/launch-info`;
 
     try {
@@ -28,4 +28,3 @@ export class LaunchInfoService {
     }
   }
 }
-
