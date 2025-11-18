@@ -241,6 +241,10 @@ async function handleReturnToMenu() {
       const duration = sessionStore.sessionDuration;
       const finalScore = scoreStore.lastScore || 0;
 
+      if (sessionManager) {
+        await sessionManager.flush(true);
+      }
+
       // Registrar puntaje local también cuando se sale manualmente al menú
       scoreStore.recordLocalScore(finalScore, gameStore.mode, gameStore.currentLevel);
       
@@ -342,6 +346,10 @@ async function handleReturnToMenuFromGameOver() {
 async function endGameSession(finalScore: number) {
   try {
     const duration = sessionStore.sessionDuration;
+
+    if (sessionManager) {
+      await sessionManager.flush(true);
+    }
     
     scoreStore.pushScore(finalScore, gameStore.isCampaignMode);
     scoreStore.recordLocalScore(finalScore, gameStore.mode, gameStore.currentLevel);

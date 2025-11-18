@@ -130,21 +130,25 @@ export const useScoreStore = defineStore('score', {
           ? (scores as any).data
           : [];
 
-        const mapped: LocalScore[] = rows
-          .map((row) => ({
-            score: row.score,
-            mode: row.mode,
-            level: row.level,
-            date: row.created_at || new Date().toISOString(),
-          }))
-          .sort(
-            (a, b) =>
-              new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          .slice(0, 10);
+        // Si la API aún no entrega historial de puntajes,
+        // no sobrescribimos los puntajes locales existentes.
+        if (rows.length > 0) {
+          const mapped: LocalScore[] = rows
+            .map((row) => ({
+              score: row.score,
+              mode: (row as any).mode ?? 'campaign',
+              level: (row as any).level ?? 1,
+              date: (row as any).created_at || new Date().toISOString(),
+            }))
+            .sort(
+              (a, b) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            )
+            .slice(0, 10);
 
-        this.recentScores = mapped;
-        saveRecentScores(this.recentScores);
+          this.recentScores = mapped;
+          saveRecentScores(this.recentScores);
+        }
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to fetch scores';
         console.error('Failed to fetch scores:', error);
