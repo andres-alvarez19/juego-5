@@ -4,6 +4,7 @@ import { createApiClient } from '@/integration/ApiClient';
 import { LeaderboardsService } from '@/integration/LeaderboardsService';
 import { authProvider } from '@/services/AuthProvider';
 import { resolveNumericGameId } from '@/integration/config';
+import { gameLabClient } from '@/services/GameLabClient';
 
 interface LocalScore {
   score: number;
@@ -122,8 +123,23 @@ export const useScoreStore = defineStore('score', {
       this.isLoading = true;
       this.error = null;
       try {
-        // Mantener compatibilidad, pero reutilizar leaderboard global
-        await this.fetchLeaderboard(gameId, 10);
+        const scores = await gameLabClient.getMyScores(gameId, userId);
+
+        const mapped: LocalScore[] = scores
+          .map((row) => ({
+            score: row.score,
+            mode: row.mode,
+            level: row.level,
+            date: row.created_at || new Date().toISOString(),
+          }))
+          .sort(
+            (a, b) =>
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+          .slice(0, 10);
+
+        this.recentScores = mapped;
+        saveRecentScores(this.recentScores);
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to fetch scores';
         console.error('Failed to fetch scores:', error);

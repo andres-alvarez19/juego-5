@@ -75,12 +75,15 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useScoreStore } from '@/stores/scoreStore';
+import { useUserStore } from '@/stores/userStore';
 import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
+const route = useRoute();
 const scoreStore = useScoreStore();
+const userStore = useUserStore();
 const showGameIdModal = ref(false);
 
 const campaignScores = computed(() => {
@@ -130,7 +133,7 @@ function getLevelRowClass(index: number): string {
 }
 
 function backToMenu() {
-  router.push('/ddd');
+  router.push({ path: '/ddd', query: route.query });
 }
 
 function getGameIdForRequests(): string | null {
@@ -168,6 +171,14 @@ onMounted(() => {
   scoreStore.fetchLeaderboard(gameId, 10).catch((error) => {
     console.error('Failed to load leaderboard:', error);
   });
+
+  // Cargar últimos puntajes del jugador desde la API (si hay usuario)
+  const userId = userStore.userId;
+  if (userId) {
+    scoreStore.fetchMyScores(gameId, userId).catch((error) => {
+      console.error('Failed to load user scores:', error);
+    });
+  }
 });
 </script>
 

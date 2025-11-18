@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 import ProgressSpinner from 'primevue/progressspinner';
@@ -62,6 +62,7 @@ import { SessionManager } from '@/runtime/SessionManager';
 import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const sessionStore = useSessionStore();
 const scoreStore = useScoreStore();
@@ -356,7 +357,7 @@ function returnToMenu() {
     gameInstance.destroy(true);
     gameInstance = null;
   }
-  router.push('/ddd');
+  router.push({ path: '/ddd', query: route.query });
 }
 
 function getMainSceneKey(): string {

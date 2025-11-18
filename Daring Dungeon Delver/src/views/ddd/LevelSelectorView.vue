@@ -62,19 +62,20 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useGameStore } from '@/stores/gameStore';
 
 const router = useRouter();
+const route = useRoute();
 const gameStore = useGameStore();
 
 function selectLevel(level: number) {
   gameStore.startLevel(level);
-  router.push('/ddd/play');
+  router.push({ path: '/ddd/play', query: route.query });
 }
 
 function backToMenu() {
-  router.push('/ddd');
+  router.push({ path: '/ddd', query: route.query });
 }
 </script>
 

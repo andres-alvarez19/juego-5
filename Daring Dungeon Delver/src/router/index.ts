@@ -6,7 +6,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/ddd',
+      redirect: (to) => ({
+        path: '/ddd',
+        query: to.query,
+      }),
     },
     ...dddRoutes,
   ],

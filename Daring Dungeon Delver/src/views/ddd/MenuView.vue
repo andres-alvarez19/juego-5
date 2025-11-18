@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { exitGameWithConfirmation } from '@/utils/exitGame';
 import { useGameStore } from '@/stores/gameStore';
 import { authProvider } from '@/services/AuthProvider';
@@ -50,6 +50,7 @@ import { LaunchInfoService } from '@/integration/LaunchInfoService';
 import { resolveNumericGameId } from '@/integration/config';
 
 const router = useRouter();
+const route = useRoute();
 const gameStore = useGameStore();
 const showAuthModal = ref(false);
 const isCheckingAuth = ref(true);
@@ -99,17 +100,17 @@ function ensureAuthorized(): boolean {
 function startGame() {
   if (!ensureAuthorized()) return;
   gameStore.startCampaign();
-  router.push('/ddd/play');
+  router.push({ path: '/ddd/play', query: route.query });
 }
 
 function selectLevel() {
   if (!ensureAuthorized()) return;
-  router.push('/ddd/level-selector');
+  router.push({ path: '/ddd/level-selector', query: route.query });
 }
 
 function viewScores() {
   if (!ensureAuthorized()) return;
-  router.push('/ddd/scores');
+  router.push({ path: '/ddd/scores', query: route.query });
 }
 
 function handleExit() {
