@@ -183,6 +183,7 @@ function handleHeroEnemyCollision(scene: GameLike, bodyA: any, bodyB: any, enemi
         enemyData.sprite.setData('attacking', true);
         enemyData.sprite.setVisible(true);
         enemyData.sprite.setActive(true);
+        enemyData.sprite.setStatic(true);
     }
     enemy.play('orc_attack_anim', true);
     scene.hero.setTint(0xff0000);
@@ -194,6 +195,7 @@ function handleHeroEnemyCollision(scene: GameLike, bodyA: any, bodyB: any, enemi
             enemyData.sprite.setData('frozen', false);
             enemyData.sprite.setData('attacking', false);
             enemyData.sprite.setVisible(true);
+            enemyData.sprite.setStatic(false);
         }
         sceneAny.handlePlayerDeath();
     } else {
@@ -203,6 +205,7 @@ function handleHeroEnemyCollision(scene: GameLike, bodyA: any, bodyB: any, enemi
                 enemyData.sprite.setData('frozen', false);
                 enemyData.sprite.setData('attacking', false);
                 enemyData.sprite.setVisible(true);
+                enemyData.sprite.setStatic(false);
             }
             scene.hero.clearTint();
         });

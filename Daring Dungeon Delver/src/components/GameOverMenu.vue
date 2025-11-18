@@ -79,30 +79,29 @@ defineExpose({
 }
 
 .frameParent {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2rem;
 }
 
 .botonesDeMenuParent {
-  position: absolute;
-  top: 670px;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 100%;
+  max-width: 860px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
 }
 
 .botonesDeMenu {
-  width: 408px;
+  width: min(408px, 90vw);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -116,54 +115,49 @@ defineExpose({
 
 .botonSalir {
   align-self: stretch;
-  height: 128px;
   position: relative;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .botonSalirChild {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  inset: 6px;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) inset;
   border-radius: 20px;
   background-color: #183037;
   border: 2px solid #a5aa00;
   box-sizing: border-box;
-  width: 388px;
-  height: 108px;
+  width: auto;
+  height: auto;
   opacity: 0.7;
 }
 
 .salir {
-  position: absolute;
-  top: calc(50% - 54px);
-  left: calc(50% - 194px);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 388px;
-  height: 108px;
+  width: 100%;
+  padding: 0.5rem 1.5rem;
+  text-align: center;
 }
 
 .gameOver2 {
-  position: absolute;
-  top: 200px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 200px;
+  font-size: clamp(80px, 12vw, 200px);
   color: #dc2626;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .seleccionarNivelParent {
-  position: absolute;
-  top: 450px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 11px;
-  font-size: 64px;
+  font-size: clamp(28px, 5vw, 64px);
   color: #fff;
 }
 
@@ -178,31 +172,42 @@ defineExpose({
 
 @media (max-width: 768px) {
   .gameOver2 {
-    font-size: 100px;
-    top: 150px;
+    font-size: clamp(60px, 11vw, 100px);
   }
 
   .seleccionarNivelParent {
-    font-size: 40px;
-    top: 350px;
+    font-size: clamp(24px, 5vw, 40px);
   }
 
   .botonesDeMenuParent {
-    top: 500px;
     flex-direction: column;
   }
 
   .botonesDeMenu {
-    width: 300px;
+    width: min(300px, 90vw);
   }
 
   .botonSalirChild {
-    width: 280px;
+    inset: 6px;
   }
 
   .salir {
-    width: 280px;
-    font-size: 32px;
+    font-size: clamp(20px, 4.5vw, 32px);
+  }
+}
+
+@media (max-width: 480px) {
+  .frameParent {
+    padding: 1.5rem 0.75rem;
+    gap: 1.5rem;
+  }
+
+  .botonesDeMenuParent {
+    gap: 12px;
+  }
+
+  .botonesDeMenu {
+    width: 100%;
   }
 }
 </style>

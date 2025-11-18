@@ -15,12 +15,12 @@ export function spawnHeroFromLayer(scene: GameLike, layerName: string) {
         scene.hero = scene.matter.add.sprite(x, y, 'player_walk', 0);
         scene.hero.setFriction(0.1);
         scene.hero.setBounce(0);
-        scene.hero.setScale(1.2);
+        scene.hero.setScale(1.4);
         scene.hero.setOrigin(0.5, 0.5);
         scene.hero.setData('type', 'hero');
 
         // Normalizar collider para evitar usar el área transparente del sprite
-        normalizeCharacterBody(scene.hero, 18);
+        normalizeCharacterBody(scene.hero, 20);
     }
 }
 

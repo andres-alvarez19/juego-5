@@ -108,7 +108,7 @@ defineExpose({
   background-color: rgba(0, 0, 0, 0.7);
   overflow: hidden;
   text-align: center;
-  font-size: 96px;
+  font-size: clamp(40px, 6vw, 96px);
   color: #fff;
   font-family: 'MedievalSharp', serif;
   z-index: 1000;
@@ -130,9 +130,10 @@ defineExpose({
 
 .pausa {
   position: absolute;
-  top: 68px;
+  top: 5vh;
   left: 50%;
   transform: translateX(-50%);
+  padding: 0 1rem;
 }
 
 .pauseInner {
@@ -145,31 +146,27 @@ defineExpose({
   background-color: rgba(40, 43, 52, 0.64);
   border: 4px solid #4e4e56;
   box-sizing: border-box;
-  width: 979px;
-  max-width: 90vw;
-  height: 548px;
-  font-size: 64px;
+  width: min(979px, 90vw);
+  height: auto;
+  min-height: 320px;
+  padding: 2.5rem 1.5rem;
+  font-size: clamp(28px, 3vw, 48px);
 }
 
 .frameParent {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 796px;
-  max-width: 85%;
-  height: 432px;
+  width: 100%;
+  max-width: 796px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 35px;
+  gap: 28px;
 }
 
 .sword46141691Parent {
-  width: 579px;
-  max-width: 100%;
-  height: 77px;
+  width: min(579px, 100%);
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,12 +187,12 @@ defineExpose({
 
 .continuar {
   position: relative;
-  white-space: nowrap;
+  padding: 0 0.75rem;
+  white-space: normal;
 }
 
 .frameChild {
-  width: 568px;
-  max-width: 90%;
+  width: min(568px, 90%);
   height: 5px;
   position: relative;
   backdrop-filter: blur(4px);
@@ -205,7 +202,7 @@ defineExpose({
 
 .hourglass17031651Parent {
   align-self: stretch;
-  height: 72px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,6 +223,7 @@ defineExpose({
 
 .door12300301Parent {
   align-self: stretch;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -246,18 +244,18 @@ defineExpose({
 
 @media (max-width: 768px) {
   .pause {
-    font-size: 48px;
+    font-size: clamp(32px, 6vw, 48px);
   }
   
   .pausa {
-    top: 40px;
-    font-size: 64px;
+    top: 4vh;
+    font-size: clamp(40px, 9vw, 64px);
   }
   
   .pauseInner {
-    font-size: 32px;
-    height: auto;
-    min-height: 400px;
+    font-size: clamp(22px, 4vw, 32px);
+    padding: 2rem 1.25rem;
+    min-height: 260px;
   }
   
   .frameParent {
@@ -267,7 +265,7 @@ defineExpose({
   .sword46141691Parent,
   .hourglass17031651Parent,
   .door12300301Parent {
-    gap: 40px;
+    gap: 24px;
   }
   
   .sword46141691Icon,
@@ -275,6 +273,30 @@ defineExpose({
   .door12300301Icon {
     width: 50px;
     height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pauseInner {
+    padding: 1.5rem 1rem;
+  }
+
+  .frameParent {
+    gap: 16px;
+  }
+
+  .sword46141691Parent,
+  .hourglass17031651Parent,
+  .door12300301Parent {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .sword46141691Icon,
+  .hourglass17031651Icon,
+  .door12300301Icon {
+    width: 40px;
+    height: 40px;
   }
 }
 </style>

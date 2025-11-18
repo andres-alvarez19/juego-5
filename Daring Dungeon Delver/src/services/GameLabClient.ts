@@ -6,6 +6,7 @@ import type {
   ScoreResponse,
   LeaderboardEntry,
 } from '@/models/types';
+import type { ApiResponse } from '@/types/api';
 import { safeFetch } from '@/utils/safeFetch';
 import { logger } from '@/utils/logger';
 import { authProvider } from './AuthProvider';
@@ -145,7 +146,7 @@ export class GameLabClient {
       limit,
     });
 
-    const response = await safeFetch<LeaderboardEntry[]>(url, {
+    const response = await safeFetch<ApiResponse<LeaderboardEntry[]>>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -155,10 +156,10 @@ export class GameLabClient {
 
     logger.debug('[GameLabClient] Received getLeaderboard response', {
       url,
-      count: response.length,
+      count: response?.data?.length ?? 0,
     });
 
-    return response;
+    return response?.data ?? [];
   }
 
   /**
@@ -175,7 +176,7 @@ export class GameLabClient {
       userId,
     });
 
-    const response = await safeFetch<LeaderboardEntry[]>(url, {
+    const response = await safeFetch<ApiResponse<LeaderboardEntry[]>>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -185,10 +186,10 @@ export class GameLabClient {
 
     logger.debug('[GameLabClient] Received getMyScores response', {
       url,
-      count: response.length,
+      count: response?.data?.length ?? 0,
     });
 
-    return response;
+    return response?.data ?? [];
   }
 }
 
