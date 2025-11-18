@@ -168,10 +168,14 @@ export const useScoreStore = defineStore('score', {
         const service = new LeaderboardsService(apiClient);
         const response = await service.getLeaderboard(resolvedGameId, limit);
 
-        const rows = response.leaderboard ?? [];
-        this.bestScores = rows.map((row, index) => ({
-          user_id: String(row.rank ?? index + 1),
-          user_name: row.nickname,
+        if (response && response.status === false) {
+          throw new Error('Leaderboard request returned status=false');
+        }
+
+        const rows = response?.data ?? [];
+        this.bestScores = rows.map((row) => ({
+          user_id: String(row.rank),
+          user_name: row.username,
           score: row.score,
           level: 1,
           mode: 'campaign',

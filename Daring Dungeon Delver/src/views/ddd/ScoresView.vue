@@ -31,9 +31,9 @@
         <div :class="$style.puntajesPorCampaa">Puntajes por campaña</div>
         <div :class="$style.botonSalir">
           <div :class="$style.botonSeleccionarNivel">
+            <div :class="$style.seleccionarNivel">Posición</div>
             <div :class="$style.seleccionarNivel">Nombre</div>
             <div :class="$style.seleccionarNivel">Puntaje</div>
-            <div :class="$style.seleccionarNivel">Fecha</div>
           </div>
           
           <div 
@@ -41,9 +41,9 @@
             :key="index"
             :class="$style[getRowClass(index)]"
           >
+            <div :class="$style.seleccionarNivel">{{ score.rank }}</div>
             <div :class="$style.seleccionarNivel">{{ score.name }}</div>
             <div :class="$style.seleccionarNivel4">{{ score.score }}</div>
-            <div :class="$style.seleccionarNivel">{{ score.date }}</div>
           </div>
         </div>
       </div>
@@ -90,9 +90,9 @@ const campaignScores = computed(() => {
   const scores = scoreStore.bestScores.filter((s) => s.mode === 'campaign');
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   return sorted.slice(0, 5).map((s) => ({
+    rank: Number.isFinite(Number(s.user_id)) ? Number(s.user_id) : undefined,
     name: s.user_name,
     score: s.score,
-    date: new Date(s.created_at).toLocaleDateString(),
   }));
 });
 

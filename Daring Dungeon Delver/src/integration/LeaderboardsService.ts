@@ -3,7 +3,8 @@ import { ApiClient } from "./ApiClient";
 import { leaderboardsPath } from "./endpoints";
 
 interface LeaderboardResponse {
-  leaderboard: LeaderboardRow[];
+  data: LeaderboardRow[];
+  status: boolean;
 }
 
 export class LeaderboardsService {
@@ -26,4 +27,3 @@ export class LeaderboardsService {
     });
   }
 }
-

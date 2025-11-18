@@ -1,6 +1,6 @@
 export interface LeaderboardRow {
   rank: number;
-  nickname: string;
+  username: string;
   score: number;
 }
 
@@ -12,8 +12,7 @@ export interface SessionUpdatePayload {
 }
 
 export interface ApiResponse<T = unknown> {
-  success: boolean;
+  status: boolean;
   data?: T;
   error?: string;
 }
-
