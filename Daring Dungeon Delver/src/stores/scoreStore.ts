@@ -5,6 +5,7 @@ import { LeaderboardsService } from '@/integration/LeaderboardsService';
 import { authProvider } from '@/services/AuthProvider';
 import { resolveNumericGameId } from '@/integration/config';
 import { gameLabClient } from '@/services/GameLabClient';
+import { isDevModeEnabled } from '@/utils/env';
 
 interface LocalScore {
   score: number;
@@ -120,6 +121,13 @@ export const useScoreStore = defineStore('score', {
     },
 
     async fetchMyScores(gameId: string, userId: string) {
+      // En modo desarrollo trabajamos solo con puntajes locales
+      if (isDevModeEnabled()) {
+        this.isLoading = false;
+        this.error = null;
+        return;
+      }
+
       this.isLoading = true;
       this.error = null;
       try {
@@ -158,6 +166,14 @@ export const useScoreStore = defineStore('score', {
     },
 
     async fetchLeaderboard(gameId: string, limit = 10) {
+      // En modo desarrollo no hay leaderboard remoto, solo puntajes locales
+      if (isDevModeEnabled()) {
+        this.isLoading = false;
+        this.error = null;
+        this.bestScores = [];
+        return;
+      }
+
       this.isLoading = true;
       this.error = null;
       try {

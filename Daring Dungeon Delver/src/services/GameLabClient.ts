@@ -10,11 +10,13 @@ import type { ApiResponse } from '@/types/api';
 import { safeFetch } from '@/utils/safeFetch';
 import { logger } from '@/utils/logger';
 import { authProvider } from './AuthProvider';
+import { isDevModeEnabled } from '@/utils/env';
 
 // Backend base URL:
 // - Prefer VITE_API_BASE_URL from environment (.env, .env.production, etc.)
 // - Fallback to local Spring Boot instance for development
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const DEV_MODE = isDevModeEnabled();
 
 /**
  * GameLabClient - Service for interacting with UfroGameLab API
@@ -35,11 +37,27 @@ export class GameLabClient {
    * Validate current authentication token
    */
   async validate(): Promise<{ valid: boolean; user?: { id: string; name: string } }> {
-    logger.info('[GameLabClient] Skipping auth validation; treating token as valid');
+    if (DEV_MODE) {
+      logger.info('[GameLabClient] DEV_MODE enabled - skipping auth validation; treating token as valid');
+      return {
+        valid: true,
+      };
+    }
 
-    return {
-      valid: true,
-    };
+    logger.info('[GameLabClient] Validating auth token');
+
+    const url = `${API_BASE_URL}/auth/validate`;
+    const headers = await authProvider.getAuthHeaders();
+
+    const response = await safeFetch<{ valid: boolean; user?: { id: string; name: string } }>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    });
+
+    return response ?? { valid: false };
   }
 
   /**

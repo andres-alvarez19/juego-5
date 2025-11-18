@@ -1,6 +1,11 @@
 <template>
   <div v-if="visible" :class="$style.gameOver">
     <div :class="$style.frameParent">
+      <div :class="$style.gameOver2">Game Over</div>
+      <div :class="$style.seleccionarNivelParent">
+        <div :class="$style.seleccionarNivel">Puntaje Final:</div>
+        <div :class="$style.gameOverSeleccionarNivel">{{ finalScore }}</div>
+      </div>
       <div :class="$style.botonesDeMenuParent">
         <div :class="$style.botonesDeMenu" @click="onRetry">
           <div :class="$style.botonSalir">
@@ -14,11 +19,6 @@
             <div :class="$style.salir">Volver al Menu</div>
           </div>
         </div>
-      </div>
-      <div :class="$style.gameOver2">Game Over</div>
-      <div :class="$style.seleccionarNivelParent">
-        <div :class="$style.seleccionarNivel">Puntaje Final:</div>
-        <div :class="$style.gameOverSeleccionarNivel">{{ finalScore }}</div>
       </div>
     </div>
   </div>

@@ -81,6 +81,9 @@ const currentLives = ref(3);
 const elapsedTime = ref(0);
 let timerInterval: number | null = null;
 
+// Último puntaje final conocido (level complete / game over)
+let lastResultScore: number | null = null;
+
 // Session tracking for close-window behavior
 let sessionManager: SessionManager | null = null;
 let sessionManagerGameId: number | null = null;
@@ -262,6 +265,7 @@ async function handleReturnToMenu() {
 
 async function handleLevelComplete(data: { score: number; level: number }) {
   try {
+    lastResultScore = data.score;
     const duration = sessionStore.sessionDuration;
     
     scoreStore.pushScore(data.score, gameStore.isCampaignMode);
@@ -297,6 +301,7 @@ async function handleLevelComplete(data: { score: number; level: number }) {
 
 async function handleGameOver(data: { score: number; level: number }) {
   try {
+    lastResultScore = data.score;
     // Pause the game scene
     if (gameInstance) {
       const mainSceneKey = getMainSceneKey();
@@ -334,7 +339,8 @@ async function handleRetryFromGameOver() {
 
 async function handleReturnToMenuFromGameOver() {
   try {
-    const finalScore = scoreStore.lastScore || 0;
+    const finalScore =
+      lastResultScore ?? scoreStore.lastScore ?? 0;
     await endGameSession(finalScore);
     returnToMenu();
   } catch (error) {

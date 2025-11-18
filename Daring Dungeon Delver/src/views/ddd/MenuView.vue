@@ -48,6 +48,7 @@ import { authProvider } from '@/services/AuthProvider';
 import { createApiClient } from '@/integration/ApiClient';
 import { LaunchInfoService } from '@/integration/LaunchInfoService';
 import { resolveNumericGameId } from '@/integration/config';
+import { isDevModeEnabled } from '@/utils/env';
 
 const router = useRouter();
 const route = useRoute();
@@ -55,10 +56,19 @@ const gameStore = useGameStore();
 const showAuthModal = ref(false);
 const isCheckingAuth = ref(true);
 const isAuthorized = ref(false);
+const isDevMode = isDevModeEnabled();
 
 onMounted(async () => {
   try {
     isCheckingAuth.value = true;
+
+    // En modo desarrollo, se omite la validación contra la API
+    if (isDevMode) {
+      isAuthorized.value = true;
+      showAuthModal.value = false;
+      isCheckingAuth.value = false;
+      return;
+    }
 
     const gameId = resolveNumericGameId();
     if (!gameId || !Number.isFinite(gameId) || gameId <= 0) {

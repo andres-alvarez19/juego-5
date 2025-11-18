@@ -44,6 +44,11 @@ function collectCoin(scene: GameLike, bodyA: any, bodyB: any) {
     scene.bigCoins = scene.bigCoins.filter(c => c !== coin);
 
     emitUIUpdate(scene);
+
+    // Verificar si el nivel se ha completado (todas las monedas recolectadas)
+    if (typeof scene.checkLevelComplete === 'function') {
+        scene.checkLevelComplete();
+    }
 }
 
 function isDoorCollision(scene: GameLike, bodyA: any, bodyB: any): boolean {

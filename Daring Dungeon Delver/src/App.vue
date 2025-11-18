@@ -23,6 +23,7 @@
 import { onMounted, ref } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 import { authProvider } from '@/services/AuthProvider';
+import { isDevModeEnabled } from '@/utils/env';
 
 const userStore = useUserStore();
 const isAuthorized = ref(false);
@@ -46,6 +47,13 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 }
 
 onMounted(() => {
+  // En modo desarrollo, permitir acceso sin token
+  if (isDevModeEnabled()) {
+    isAuthorized.value = true;
+    checked.value = true;
+    return;
+  }
+
   // Check for existing authentication
   const token = authProvider.getToken();
   if (token) {

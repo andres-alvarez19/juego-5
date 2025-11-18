@@ -66,4 +66,6 @@ export interface GameLike extends Scene {
     invincibilityEndTime: number;
     // Tiempo (ms, scene.time.now) hasta el que el héroe es invulnerable tras recibir daño de un enemigo
     damageInvulnerableUntil: number;
+    checkLevelComplete?: () => void;
+    handlePlayerDeath?: () => void;
 }
