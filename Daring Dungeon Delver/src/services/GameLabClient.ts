@@ -135,7 +135,7 @@ export class GameLabClient {
    * Get leaderboard entries
    */
   async getLeaderboard(gameId: string, limit = 10): Promise<LeaderboardEntry[]> {
-    const url = `${API_BASE_URL}/leaderboard/${gameId}?limit=${limit}`;
+    const url = `${API_BASE_URL}/collection/leaderboards/${gameId}?limit=${limit}`;
     const headers = await authProvider.getAuthHeaders();
 
     logger.info('[GameLabClient] Sending getLeaderboard request', {
@@ -165,7 +165,7 @@ export class GameLabClient {
    * Get user's scores
    */
   async getMyScores(gameId: string, userId: string): Promise<LeaderboardEntry[]> {
-    const url = `${API_BASE_URL}/scores/${gameId}/user/${userId}`;
+    const url = `${API_BASE_URL}/collection/my-games/${gameId}`;
     const headers = await authProvider.getAuthHeaders();
 
     logger.info('[GameLabClient] Sending getMyScores request', {
