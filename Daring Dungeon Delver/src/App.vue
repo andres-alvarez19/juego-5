@@ -6,7 +6,12 @@
     <div v-else-if="!isAuthorized" class="app-unauthorized">
       <div class="app-unauthorized-card">
         <h1>No autorizado</h1>
-        <p>No se encontró un token válido para jugar Daring Dungeon Delver.</p>
+        <p v-if="!missingUserId">
+          No se encontró un token válido para jugar Daring Dungeon Delver.
+        </p>
+        <p v-else>
+          No se pudo obtener el identificador de usuario desde el token de autenticación.
+        </p>
         <p>Inicia sesión desde UfroGameLab para acceder al juego.</p>
       </div>
     </div>
@@ -22,19 +27,54 @@ import { authProvider } from '@/services/AuthProvider';
 const userStore = useUserStore();
 const isAuthorized = ref(false);
 const checked = ref(false);
+const missingUserId = ref(false);
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = payload.padEnd(payload.length + ((4 - (payload.length % 4)) % 4), '=');
+    const json =
+      typeof window !== 'undefined'
+        ? window.atob(padded)
+        : Buffer.from(padded, 'base64').toString('binary');
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
 
 onMounted(() => {
   // Check for existing authentication
   const token = authProvider.getToken();
   if (token) {
-    // In a real app, you would validate the token and get user info
-    // For now, we'll set a mock user
-    userStore.setUser({
-      id: 'user-123',
-      displayName: 'Player',
-      token,
-    });
-    isAuthorized.value = true;
+    const payload = decodeJwtPayload(token);
+    const rawUserId =
+      payload &&
+      (payload['sub'] ||
+        payload['user_id'] ||
+        payload['userId'] ||
+        payload['id']);
+
+    if (rawUserId && typeof rawUserId === 'string') {
+      const rawDisplayName =
+        payload['name'] ||
+        payload['nickname'] ||
+        payload['preferred_username'] ||
+        'Player';
+
+      userStore.setUser({
+        id: rawUserId,
+        displayName:
+          typeof rawDisplayName === 'string' ? rawDisplayName : 'Player',
+        token,
+      });
+      isAuthorized.value = true;
+    } else {
+      isAuthorized.value = false;
+      missingUserId.value = true;
+    }
   } else {
     isAuthorized.value = false;
   }
