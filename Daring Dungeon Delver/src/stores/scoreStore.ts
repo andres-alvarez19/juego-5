@@ -124,8 +124,13 @@ export const useScoreStore = defineStore('score', {
       this.error = null;
       try {
         const scores = await gameLabClient.getMyScores(gameId, userId);
+        const rows = Array.isArray(scores)
+          ? scores
+          : Array.isArray((scores as any)?.data)
+          ? (scores as any).data
+          : [];
 
-        const mapped: LocalScore[] = scores
+        const mapped: LocalScore[] = rows
           .map((row) => ({
             score: row.score,
             mode: row.mode,
